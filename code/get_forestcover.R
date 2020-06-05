@@ -7,7 +7,7 @@
 # & heavily borrows from Jacob & Jorgen's code 
 
 ## Packages ----
-library(reticulate); library(dplyr)
+library(reticulate); library(dplyr); library(ggplot2)
 
 ## Set up GEE session ----
 # point reticulate to the conda environment created in GEE_setup.sh
@@ -16,7 +16,6 @@ ee <- import("ee")          # Import the Earth Engine library
 ee$Initialize()             # Trigger the authentication
 
 # Get E Cord pts ----
-library(dplyr)
 df_bird <- readRDS("../Colombia/data/bird data_Jan&Jun2019/analysisDataset_EasternCordillera.rds")
 unique_pt <- df_bird$Point %>% unique
 
