@@ -6,13 +6,20 @@
 ##  source() from script that specifies from & target variables
 if(!any(ls() == "target")) stop("need to specify target")
 if(!any(ls() == "from")) stop("need to specify from")
+if(!any(ls() == "dir.ignore")) stop("need to specify dir.ignore")
+
+library(dplyr)
 
 # if target directory doesn't already exist, create it
 if(!file.exists(target)) dir.create(target)
 
 # get all files in respective directories
-from_files <- list.files(from, full.names = T, recursive = T)
-target_files <- list.files(target, full.names = T, recursive = T)
+from_files <- list.files(from, full.names = T, recursive = T) 
+target_files <- list.files(target, full.names = T, recursive = T) 
+if(dir.ignore != "") {
+    from_files <- from_files[!grepl(paste0(dir.ignore, collapse = "|"), from_files)]
+    target_files <- target_files[!grepl(paste0(dir.ignore, collapse = "|"), target_files)]
+}
 
 # note fnames_toMatch has the target path
 from_finfo <- file.info(from_files) %>%

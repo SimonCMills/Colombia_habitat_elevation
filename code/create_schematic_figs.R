@@ -8,7 +8,7 @@ df <- expand.grid(x = seq(-1.2, 1.2, len=200),
             scale = .5, 
             mid = c(-1.2, 0, 1.2), 
             b1 = 0, 
-            b11 = c(-1, 0, 2), 
+            b11 = c(-1, 0, 10), 
             h_sc=c(0,1)) %>%
     as_tibble() %>%
     mutate(scale = ifelse(mid == 0, 3, 1.5),
