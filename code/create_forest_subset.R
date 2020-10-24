@@ -9,6 +9,14 @@ adata <- read.csv("data/Parker_Stotz_Fitzpatrick_1996/databases/adata.csv") %>%
     as_tibble %>%
     mutate(parker = paste(GENUS, SPECIES))
 
+cdata <- read.csv("data/Parker_Stotz_Fitzpatrick_1996/databases/cdata.csv") %>%
+    as_tibble %>%
+    mutate(parker = paste(GENUS, SPECIES))
+
+parker_data <- bind_rows(adata, cdata)
+dim(adata)
+dim(parker_data)
+
 species_lookup <- read.csv("data/initial_species_list.csv") %>%
     left_join(., parker_lookup) %>%
     as_tibble %>%
@@ -24,7 +32,7 @@ df_species <- df_bird %>%
     select(species_hbw, n_tot, n_pt) %>%
     arrange(desc(n_pt)) %>%
     left_join(., species_lookup) %>%
-    left_join(., adata) 
+    left_join(., parker_data) 
 
 dropped_species <- df_species %>%
     filter(is.na(parker))
