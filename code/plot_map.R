@@ -1,8 +1,8 @@
 ## plotting map of points. 
 # note: needs post-processing to move inset figure to overlap plot (not 
 # straightforward to do this without leaving plot margins of first plot running
-# through inset figure; solution was to plot adjacent to figure and move outside
-# of R)
+# through inset figure; solution was to plot adjacent to figure and move afterwards,
+# outside of R)
 
 # housekeeping
 library(dplyr); library(sf); library(stars); library(ggplot2); 
@@ -24,6 +24,12 @@ fc <- read_stars("data/ele_fc_rasters/fc_500m.tif")
 df_ptInfo <- readRDS("data/point_ele_Eastern Cordillera.rds") %>%
     filter(forest==1, !grepl("^CC", point)) %>%
     st_transform(crs = "epsg:3117")
+
+df_ptInfo %>% 
+  st_union %>% 
+  st_convex_hull %>% 
+  st_area %>% 
+  units::set_units(., "km^2")
 
 pts <- st_coordinates(df_ptInfo) %>% as_tibble
 
