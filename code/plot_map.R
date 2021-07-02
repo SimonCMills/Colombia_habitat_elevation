@@ -22,7 +22,7 @@ fc <- read_stars("data/ele_fc_rasters/fc_500m.tif")
 
 # read points ----
 df_ptInfo <- readRDS("data/point_ele_Eastern Cordillera.rds") %>%
-    filter(forest==1, !grepl("^CC", point)) %>%
+    filter(forest==1, !grepl("^CC", point), ele_jaxa >= 875) %>%
     st_transform(crs = "epsg:3117")
 
 df_ptInfo %>% 
@@ -83,6 +83,8 @@ Bogota_df <- data_frame(y=4.7110, x=-74.0721) %>%
   as_tibble
 
 # get coordinates for margins ----
+dimensions_WGS84 <- st_bbox(bbox %>% st_transform(., WGS84))
+
 x_coords <- expand.grid(long_WGS84 = seq(-74.5, -72.5, 1), lat_WGS84 = dimensions_WGS84["ymin"]) %>%
   as.matrix
 y_coords <- expand.grid(long_WGS84 = dimensions_WGS84["xmin"], lat_WGS84 = seq(4, 8, 2)) %>%
@@ -148,7 +150,7 @@ hist_fc <- ggplot(df_ptInfo, aes(ele_jaxa, fill=cut(ele_jaxa, seq(0, 5000, 1000)
         panel.grid = element_blank(), 
         axis.text.x = element_text(margin=margin(2,0,0,0))) 
 
-# Plot 3 ----
+# plot 3 ----
 # create bounding box for inset figure (all of CO plus outlying areas)
 # just removes far-away areas to prevent self intersections when projected for 
 # Colombia
@@ -173,7 +175,8 @@ CO_buffer <- ne_countries(country="Colombia") %>%
     st_buffer(50000) %>%
     st_bbox()
 
-test <- rnaturalearth::ne_countries(scale=10) %>%
+# get country outlines
+country_borders <- rnaturalearth::ne_countries(scale=10) %>%
   st_as_sf %>%
   st_crop(., bbox_inset) %>%
   st_transform(., crs=flat) %>% 
@@ -186,11 +189,12 @@ Bogota <- data_frame(y=4.7110, x=-74.0721) %>%
     
 # get mountain ranges
 mountains <- readRDS("../range_shifts/data/mountain_polygons.rds") %>% 
-      st_union() %>%
-      st_crop(., bbox_inset) %>%
-      st_transform(., crs=flat) %>%
-      st_buffer(., 1) %>%
-      st_crop(CO_buffer)
+  st_union() %>%
+  st_transform(., crs=flat) %>%
+  st_buffer(1) %>%
+  st_crop(., country_borders) %>%
+  st_transform(., crs=flat) %>%
+  st_crop(CO_buffer)
   
 mountains_ftfy <- mountains %>%
   as_Spatial %>%
@@ -209,13 +213,15 @@ ggsave("figures/map_inset.png", mapplot, height=200*.2, width=150*.2, units="mm"
 # Join all 3 plots ----
 # because the plot is coord_equal() scaled, you have to maintain the dimensions
 # when inserting the grob. 
+# note: inset is plotted adjacent to main figure- this is moved to overlap figure
+# in post-processing. 
 dims <- bbox %>% st_bbox()
 
 plot_all3 <- map_fc +
   theme(plot.margin = unit(c(2, 0, 1, 0), "cm")) +
   annotation_custom(
     ggplotGrob(hist_fc),
-    xmin = x_inset[1] + 8000, xmax = x_inset[2] + 15000,
+    xmin = 909666 - 200000, xmax = 900000,
     ymax = y_trans$Y[1] + 8e4, ymin= y_trans$Y[1] -4e4
   ) +
   annotation_custom(
@@ -223,7 +229,6 @@ plot_all3 <- map_fc +
     xmin = 7e+05 - 3e5 , xmax = 7e+05 - 1e5, 
     ymax = 15e5 + 2e5/(dims["ymax"] - dims["ymin"]), ymin= 13e5 #bbox2["ymin"] 
   ) 
-plot_all3
 
 ggsave("figures/map_fullplot_v3.png", plot_all3, height=200*.8, width=250*.8, 
        units="mm", dpi=400)
