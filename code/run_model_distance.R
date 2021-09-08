@@ -23,14 +23,14 @@ mod <- cmdstan_model(model_name,
                      force_recompile=TRUE)
 
 # read previous fit for inverse metric and step size to speed adaptation
-#prior_run <- read_cmdstan_csv("stan_temp/model_distance_highDep_chain1-202106110055-1.csv")
+prior_run <- read_cmdstan_csv("stan_out/model_distance_from_centre-202108210023-1-383615.csv")
 
 # sample (writing to stan_temp)
 samps <- mod$sample(data = stan_data, 
                     refresh = 50, 
                     chains = n_chains, 
                     parallel_chains = n_chains, 
-                    #inv_metric = prior_run$inv_metric$`1`,
+                    inv_metric = prior_run$inv_metric$`1`,
                     threads_per_chain = n_threads,
                     iter_warmup = 1000, 
                     iter_sampling = 1000,
