@@ -227,7 +227,7 @@ model {
     sigma_d1 ~ normal(0, 2);
     
     // standard normals
-    mid0_z ~ std_normal(0, 1);
+    mid0_z ~ normal(0, 1);
     b0_z ~ normal(0, 1);
     b1_z ~ normal(0, 1);
     b2_z ~ normal(0, 1);
