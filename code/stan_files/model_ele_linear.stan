@@ -1,5 +1,5 @@
 // hierarchical habitat-detection model for elevational and habitat associations
-// version: distance from centre
+// version: elevation 
 
 functions{
     real partial_sum(int[,] det_slice, 
@@ -8,7 +8,6 @@ functions{
                      vector b1,
                      vector b2,
                      vector b3,
-                     vector b3_upr, 
                      real b4,
                      real b5,
                      vector mid0,
@@ -30,7 +29,9 @@ functions{
                      vector range_pos,
                      vector habitat, 
                      vector ele_midpoint, 
-                     vector ele_midpoint_x_habitat) {
+                     vector ele_midpoint_x_habitat, 
+                     vector ele, 
+                     vector ele_x_habitat) {
                          
         // indexing vars
         int len = end - start + 1;
@@ -58,10 +59,9 @@ functions{
                 b0[id_sp[r0+r]] +
                 b1[id_sp[r0+r]]*habitat[r0+r] +
                 b2[id_sp[r0+r]]*dist +
-                b3[id_sp[r0+r]]*habitat[r0+r]*dist +
-                b3_upr[id_sp[r0+r]]*habitat[r0+r]*dist_upr +
-                b4*ele_midpoint[r0+r] +
-                b5 * ele_midpoint_x_habitat[r0+r]; //elevationally-varying habitat effect
+                b3[id_sp[r0+r]] * ele_x_habitat[r0+r] + 
+                b4 * ele_midpoint[r0+r] +
+                b5 * ele_midpoint_x_habitat[r0+r]; //elevationally-varying habitat effect.
 
             // detection
             logit_theta[1:n_visit[r0+r]] = obs_sp[id_obs_sp[r0+r]] +
@@ -108,10 +108,12 @@ data {
     vector[n_tot] range_pos; // scaled elevations [-1, 1] (i.e. range position)
     vector[n_tot] habitat; // stdised habitat
     vector[n_tot] ele_midpoint; // species range midpoint: stdised elevation
+    vector[n_tot] ele; 
     int<lower=1> grainsize;
 } 
 transformed data{
     vector[n_tot] ele_midpoint_x_habitat = ele_midpoint .* habitat;
+    vector[n_tot] ele_x_habitat = ele .* habitat;
 }
 parameters {
     // occupancy-term ranef mus
@@ -119,7 +121,6 @@ parameters {
     real mu_b1;
     real mu_b2;
     real mu_b3;
-    real mu_b3_upr;
     real mu_mid0;
     
     // occupancy-term fixefs
@@ -138,9 +139,6 @@ parameters {
    
     real<lower=0> sigma_b3;
     vector[n_species] b3_z;
-    
-    real<lower=0> sigma_b3_upr;
-    vector[n_species] b3_upr_z;
     
     real<lower=0> sigma_mid0;
     vector[n_species] mid0_z;
@@ -176,7 +174,6 @@ transformed parameters {
     vector[n_species] b1 = mu_b1 + b1_z * sigma_b1;
     vector[n_species] b2 = mu_b2 + b2_z * sigma_b2;
     vector[n_species] b3 = mu_b3 + b3_z * sigma_b3;
-    vector[n_species] b3_upr = mu_b3_upr + b3_upr_z * sigma_b3_upr;
     
     vector[n_species] mid0 = mu_mid0 + mid0_z * sigma_mid0;
     vector[n_cluster_species] cl_sp = cl_sp_z * sigma_cl_sp;
@@ -191,13 +188,14 @@ transformed parameters {
 model {
     // Likelihood
     target += reduce_sum_static(partial_sum, det_data, grainsize, 
-                                b0, b1, b2, b3, b3_upr, b4, b5, mid0,
+                                b0, b1, b2, b3, b4, b5, mid0,
                                 site_sp, cl_sp, obs_sp,
                                 d0, d1, d2,
                                 n_visit, time,
                                 id_sp, id_site_sp, id_cl_sp, id_obs_sp,
                                 id_obs_JS, id_obs_DE,
-                                Q, range_pos, habitat, ele_midpoint, ele_midpoint_x_habitat);
+                                Q, range_pos, habitat, ele_midpoint, ele_midpoint_x_habitat, 
+                                ele, ele_x_habitat);
     
     // Ranef hyper-priors 
     // mus 
@@ -206,33 +204,30 @@ model {
     mu_b1 ~ normal(0, 3);
     mu_b2 ~ normal(-3, 4); // elevation parameter
     mu_b3 ~ normal(0, 3);
-    mu_b3_upr ~ normal(0, 3);
     
     mu_d0 ~ normal(0, 1.5);
     mu_d1 ~ normal(0, 3); 
     
     // sigmas
     sigma_mid0 ~ normal(0, 3);
-    sigma_b0 ~ normal(0, 3);
-    sigma_b1 ~ normal(0, 3);
+    sigma_b0 ~ normal(0, 2);
+    sigma_b1 ~ normal(0, 2);
     sigma_b2 ~ normal(0, 3);
     sigma_b3 ~ normal(0, 3);
-    sigma_b3_upr ~ normal(0, 3);
     
-    sigma_site_sp ~ normal(0, 3);
-    sigma_cl_sp ~ normal(0, 3);
-    sigma_obs_sp ~ normal(0, 3);
+    sigma_site_sp ~ normal(0, 2);
+    sigma_cl_sp ~ normal(0, 2);
+    sigma_obs_sp ~ normal(0, 2);
     
     sigma_d0 ~ normal(0, 2);
     sigma_d1 ~ normal(0, 2);
     
     // standard normals
-    mid0_z ~ std_normal(0, 1);
+    mid0_z ~ normal(0, 1);
     b0_z ~ normal(0, 1);
     b1_z ~ normal(0, 1);
     b2_z ~ normal(0, 1);
     b3_z ~ normal(0, 1);
-    b3_upr_z ~ normal(0, 1);
     
     site_sp_z ~ normal(0, 1);
     cl_sp_z ~ normal(0, 1);
