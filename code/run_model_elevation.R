@@ -14,7 +14,7 @@ library("dplyr"); library("reshape2"); library("cmdstanr"); library("posterior")
 source("code/format_analysis_dataset.R")
 
 # Run model ----
-model_name <- "code/stan_files/model_ele_linear.stan"
+model_name <- "code/stan_files/model_elevation.stan"
 
 # compile stan
 mod <- cmdstan_model(model_name, 
