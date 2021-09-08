@@ -1,13 +1,16 @@
 # Extract treecover metrics for buffer around points 
-
+#
 # IMPORTANT: requires GEE account, Python installation, and setting up 
 # authentification keys (which was somewhat of a faff on windows..)
-
+#
 # Code adapted from https://philippgaertner.github.io/2019/12/earth-engine-rstudio-reticulate/
-# & heavily borrows from Jacob & Jorgen's code 
+# & inherits from Jacob & Jorgen's code 
+#
+# note: rgee is *way* easier, rewrite using this rather than reticulate directly?
 
 ## Packages ----
 library(reticulate); library(dplyr); library(ggplot2); library(sf)
+library(landscapemetrics); library(raster)
 
 ## Set up GEE session ----
 # point reticulate to the conda environment created in GEE_setup.sh
@@ -19,12 +22,9 @@ ee$Initialize()             # Trigger the authentication
 pts <- readRDS("../Colombia/data/points/point_ele_Eastern Cordillera.rds")
 
 # EE datasets ----
-# Load raster files (not using most currently, but have retained for future use)
-# ALOS <- ee$Image('JAXA/ALOS/AW3D30/V2_2')
-# SRTM30 <- ee$Image("USGS/SRTMGL1_003")
+# Load raster files
 tc <- ee$Image("UMD/hansen/global_forest_change_2019_v1_7")
 epsg <- ee$Projection('EPSG:4326')
-
 
 ## Extract Hansen treecover ----
 # get 2000 treecover and loss metrics
@@ -46,7 +46,7 @@ get_tc <- function(geometry_i) {
 
 #* get buffers ----
 buffer.width <- 500      # radius, in meters
-max.error <- 1             # maximum error (controls number of vertices), in meters
+max.error <- 1           # maximum error (controls number of vertices), in meters
 geomcircs <- lapply(1:nrow(pts), do_buffer)
 
 #* create object ----
@@ -83,21 +83,18 @@ tcs_df %>%
 ggsave("figures/example_tc2000.png")
 
 # save df ----
-# saveRDS(tcs_df, "data/hansen_100m_buffer.rds")
-# saveRDS(tcs_df, "data/hansen_200m_buffer.rds")
 saveRDS(tcs_df, "data/hansen_500m_buffer.rds")
 
 ## forest metrics (apply specifically to forest points)
-library(landscapemetrics); library(raster)
-
 forest_points <- pts %>% filter(forest == 1) %>% pull(point)
 
 tc_metrics <- tcs_df %>%
     filter(point %in% forest_points) %>%
-    mutate(tc_2000 = treecover2000 > 50, 
+    mutate(tc_2000 = treecover2000 >= 50, 
            tc_2018 = as.numeric(tc_2000 - (lossyear != 0) == 1)) %>%
     group_by(point) %>%
-    summarise(amt_tc = sum(tc_2018), pct_tc = amt_tc/n())
+    summarise(amt_tc = sum(tc_2018), pct_tc = amt_tc/n()) %>%
+    mutate(edge = NA, contig=NA, pct_core_area = NA)
 
 for(i in 1:nrow(tc_metrics)) {
     point_i <- tc_metrics$point[i]
@@ -125,6 +122,12 @@ for(i in 1:nrow(tc_metrics)) {
     tc_metrics$pct_core_area[i] <- lsm_c_cai_mn(r2, directions=8) %>%
         filter(class==1) %>%
         pull(value)
+    tc_metrics$contig[i]  = lsm_c_contig_mn(r2) %>%
+        filter(class==1) %>%
+        pull(value)
+    tc_metrics$edge[i]  = lsm_c_ed(r2) %>%
+        filter(class==1) %>%
+        pull(value)
 }
 
-saveRDS(tcs_metrics, "data/forest_cover_metrics_500m.rds")
+saveRDS(tc_metrics, "data/forest_cover_metrics_500m.rds")
