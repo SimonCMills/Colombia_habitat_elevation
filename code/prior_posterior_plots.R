@@ -93,7 +93,7 @@ priors2 <- bind_rows(posterior, posterior2) %>%
 # plot
 ggplot(posterior, aes(value)) + 
     facet_wrap(~variable2, scales="free", ncol=4) +
-    scale_x_continuous(expand=c(0,0)) +
+    scale_x_continuous(breaks = seq(-10, 10, 2), expand=c(0,0)) +
     geom_ribbon(data=priors2, aes(x, ymax=y), ymin=-Inf, fill="grey90", col="grey70") + 
     geom_density() + 
     geom_density(data=posterior2,lty=2) +
