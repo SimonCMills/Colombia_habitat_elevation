@@ -1,4 +1,6 @@
 # fitting script 
+# flocker package is available at https://github.com/jsocolar/flocker
+# models ran with version 0.1-0
 
 library(dplyr); library(flocker); library(brms); library(ape)
 
