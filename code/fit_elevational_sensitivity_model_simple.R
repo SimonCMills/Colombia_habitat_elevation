@@ -52,7 +52,6 @@ feffs <- fixef(f2, summary=F) %>%
     as_tibble %>%
     slice(seq(1, 4000, 8))
 
-names(feffs)
 high_dep_effs <- feffs %>%
     as_tibble() %>%
     mutate(inter_eff = `ele_midpoint_std:habitat_std`, 
@@ -121,8 +120,6 @@ effs_p1 <- bind_rows(high_dep_effs, med_dep_effs) %>%
     labs(y = "", x = "", fill = "Dependency") +
     geom_text(aes(label=pd, y = upr), position = position_dodge(width=.5), hjust=-0.2, vjust=.3, size=3)
 
-
-# summ_fit <- summary(fit)
 sigmas <- VarCorr(f2, summary=F)
 lambdas <- (sigmas$species_eltontraits$sd/
                 (sigmas$species$sd[,3:4] + sigmas$species_eltontraits$sd))[seq(1, 4000, 8),] %>%
