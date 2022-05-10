@@ -86,7 +86,7 @@ occ_p1 <- median_occ2 %>%
     scale_color_manual(values=cols) +
     scale_fill_manual(values=cols) +
     labs(x = "", 
-         y = "P(Occupancy)", colour = "", fill= "")
+         y = "Pr(Occupancy)", colour = "", fill= "")
 
 occ_p2 <- median_occ2 %>%
     filter(medium_dependency == dep_lvls["medium"], !(ele_midpoint == 800)) %>%
@@ -115,7 +115,7 @@ occ_p2 <- median_occ2 %>%
     scale_color_manual(values=cols) +
     scale_fill_manual(values=cols) +
     labs(x = "", 
-         y = "P(Occupancy)", colour = "", fill= "")
+         y = "Pr(Occupancy)", colour = "", fill= "")
 
 occ_p3 <- logOdds3 %>%
     filter(!(ele_midpoint == 800)) %>%
@@ -226,7 +226,7 @@ p1 <- ggplot(median_occ_sp2, aes(ele_pt, mean, group=species, colour = ele_midpo
     scale_colour_viridis_c() +
     scale_linetype_manual(values = c(2,1)) +
     coord_cartesian(xlim=c(880, 3800)) +
-    labs(x = "Elevation (m)", y = "P(Occupancy)") +
+    labs(x = "Elevation (m)", y = "Pr(Occupancy)") +
     theme_bw() +
     theme(axis.text = element_text(colour="black"), 
           strip.text = element_text(face="bold", hjust=0), 
