@@ -1,5 +1,7 @@
 # extract summary table for SOM
-library(dplyr); library(kableExtra); library(brms)
+library(dplyr); library(kableExtra); library(brms); library(kableExtra)
+
+summ <- summary(fit)
 
 RE_cleaned <- bind_rows(summ$random, .id = "id") %>%
     mutate(Name = row.names(.)) %>%
