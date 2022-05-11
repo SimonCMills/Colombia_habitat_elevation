@@ -1,9 +1,6 @@
 # plotting script for main figures
 
 library(flocker); library(brms); library(dplyr); library(ggplot2)
-
-# read in model and dataset ----
-fit <- readRDS("output/model_elevational_sensitivity.rds")
 analysis_df <- readRDS("output/analysis_df.rds")
 dep_lvls <- c(high = 1, medium = -1)
 
