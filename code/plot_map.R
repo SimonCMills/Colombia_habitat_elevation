@@ -202,11 +202,12 @@ mountains_ftfy <- mountains %>%
 
 # Plot inset figure (3) ---
 mapplot <- ggplot(Bogota) + 
-    geom_sf(data=mountains, fill="grey90", col=NA) +
-    geom_sf(data=test, fill=NA, col="black", alpha=1) +
-    geom_sf(data=bbox, fill=NA, col="black", alpha=1) +
-    theme_void() +
-    geom_sf(size=2, shape=17, col="black", alpha=1)
+  geom_sf(data=country_borders, fill="white", col=NA, alpha=1) +
+  geom_sf(data=mountains, fill="grey90", col=NA) +
+  geom_sf(data=country_borders, fill=NA, col="black", alpha=1) +
+  geom_sf(data=bbox, fill=NA, col="black", alpha=1) +
+  theme_void() +
+  geom_sf(size=2, shape=17, col="black", alpha=1)
 
 ggsave("figures/map_inset.png", mapplot, height=200*.2, width=150*.2, units="mm")
 
@@ -230,5 +231,9 @@ plot_all3 <- map_fc +
     ymax = 15e5 + 2e5/(dims["ymax"] - dims["ymin"]), ymin= 13e5 #bbox2["ymin"] 
   ) 
 
-ggsave("figures/map_fullplot_v3.png", plot_all3, height=200*.8, width=250*.8, 
+ggsave("figures/map_fullplot.png", plot_all3, height=200*.8, width=250*.8, 
        units="mm", dpi=400)
+
+ggsave("figures/map_fullplot.pdf", plot_all3, height=200*.8, width=250*.8, 
+       units="mm", dpi=400)
+
