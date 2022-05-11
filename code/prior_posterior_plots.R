@@ -26,9 +26,6 @@ ggplot(fixefs, aes(value)) + geom_density() +
 
 # sd components
 vc <- VarCorr(fit, summary = F)
-vc$id_obs_sp
-
-vc2 <- lapply(vc, as_tibble)
 vc_list <- list()
 for(i in 1:length(vc)) {
   vc_i <- as_tibble(vc[[i]]$sd)
