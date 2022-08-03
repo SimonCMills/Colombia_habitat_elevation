@@ -9,7 +9,7 @@ if(run_mod) {
     fit_prior <- c(brms::set_prior("normal(-2.5, 1.5)", class = "Intercept"), 
                    brms::set_prior("normal(0, .5)", class = "b"), # dependency interactions
                    brms::set_prior("normal(0, 2)", coef = "range_pos"), 
-                   brms::set_prior("normal(-4, 2)", coef = "range_pos2"), 
+                   brms::set_prior("normal(-3, 1)", coef = "range_pos2"), 
                    brms::set_prior("normal(0, 2)", coef = "ele_midpoint_std"), 
                    brms::set_prior("normal(0, 2)", coef = "ele_midpoint_std:habitat_std"), 
                    brms::set_prior("normal(0, 2)", coef = "habitat_std:range_pos"), 
