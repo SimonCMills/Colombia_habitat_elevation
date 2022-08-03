@@ -279,4 +279,4 @@ stan_data <- list(n_visit = analysis_df$n_visit,
 
 # Save data ----
 saveRDS(stan_data, "output/stan_data.rds")
-saveRDS(analysis_df, "output/analysis_df_birdlife.rds") 
+saveRDS(analysis_df, "output/analysis_df.rds") 
